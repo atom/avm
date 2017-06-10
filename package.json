@@ -1,0 +1,46 @@
+{
+  "name": "atom-version-manager",
+  "version": "0.0.1",
+  "description": "A tool to quickly switch between versions of Atom",
+  "scripts": {
+    "compile": "tsc",
+    "prepublish": "npm run compile",
+    "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "mocha --compilers ts:ts-node/register ./test/*",
+    "build": "npm-run-all compile lint test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atom/avm"
+  },
+  "keywords": [
+    "atom",
+    "windows"
+  ],
+  "author": "Paul Betts <paul@paulbetts.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/avm/issues"
+  },
+  "main": "lib/src/index.js",
+  "typings": "lib/src/index.d.ts",
+  "homepage": "https://github.com/atom/avm",
+  "dependencies": {
+    "debug": "^2.6.8"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.0",
+    "@types/chai-as-promised": "0.0.31",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.29",
+    "chai": "^4.0.2",
+    "chai-as-promised": "^6.0.0",
+    "marked": "^0.3.6",
+    "mocha": "^3.4.2",
+    "npm-run-all": "^4.0.2",
+    "ts-node": "^3.0.6",
+    "tslint": "^5.4.3",
+    "typescript": "^2.3.4",
+    "uuid": "^3.0.1"
+  }
+}
