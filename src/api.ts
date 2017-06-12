@@ -14,50 +14,6 @@ export enum AtomVersionKind {
   Daily
 }
 
-function getCurrentPackageVersion(appDir: string): string {
-  let apps = fs.readdirSync(appDir).filter(x => !!x.match(/app-/));
-  if (!apps || apps.length < 1) {
-    throw new Error(`${appDir} isn't a Squirrel.Windows package`);
-  }
-
-  return apps.reduce((acc, x) => {
-    let ver = x.replace(/^app-/, '');
-    return semver.gte(ver, acc) ? ver : acc;
-  }, '0.0.0');
-}
-
-function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
-  let dirName;
-
-  switch (kind) {
-  case AtomVersionKind.Stable:
-    dirName = `avm-atom-stable`;
-    break;
-  case AtomVersionKind.Beta:
-    dirName = `avm-atom-beta`;
-    break;
-  case AtomVersionKind.Daily:
-    dirName = `avm-atom-daily`;
-    break;
-  default:
-    throw new Error(`Can't get installed Atom path for kind: ${kind}`);
-  }
-
-  return path.join(baseDir || process.env['LOCALAPPDATA'], dirName);
-}
-
-async function runInstallHookOnCurrentAtom(type: string, baseDir?: string) {
-  let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
-  if (!fs.existsSync(atomDir)) {
-    return;
-  }
-
-  let version = getCurrentPackageVersion(atomDir);
-
-  let atomDotExe = path.join(atomDir, `app-${version}`, 'atom.exe');
-  await spawnPromise(atomDotExe, [`--squirrel-${type}`, version]);
-}
-
 export function getInstalledAtomVersionType(baseDir?: string): AtomVersionKind {
   let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
 
@@ -110,4 +66,48 @@ export async function switchToInstalledAtom(kind: AtomVersionKind, baseDir?: str
   createSymbolicLink(newAtom, linkedAtom);
 
   runInstallHookOnCurrentAtom('install', baseDir);
+}
+
+function getCurrentPackageVersion(appDir: string): string {
+  let apps = fs.readdirSync(appDir).filter(x => !!x.match(/app-/));
+  if (!apps || apps.length < 1) {
+    throw new Error(`${appDir} isn't a Squirrel.Windows package`);
+  }
+
+  return apps.reduce((acc, x) => {
+    let ver = x.replace(/^app-/, '');
+    return semver.gte(ver, acc) ? ver : acc;
+  }, '0.0.0');
+}
+
+function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
+  let dirName;
+
+  switch (kind) {
+  case AtomVersionKind.Stable:
+    dirName = `avm-atom-stable`;
+    break;
+  case AtomVersionKind.Beta:
+    dirName = `avm-atom-beta`;
+    break;
+  case AtomVersionKind.Daily:
+    dirName = `avm-atom-daily`;
+    break;
+  default:
+    throw new Error(`Can't get installed Atom path for kind: ${kind}`);
+  }
+
+  return path.join(baseDir || process.env['LOCALAPPDATA'], dirName);
+}
+
+async function runInstallHookOnCurrentAtom(type: string, baseDir?: string) {
+  let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
+  if (!fs.existsSync(atomDir)) {
+    return;
+  }
+
+  let version = getCurrentPackageVersion(atomDir);
+
+  let atomDotExe = path.join(atomDir, `app-${version}`, 'atom.exe');
+  await spawnPromise(atomDotExe, [`--squirrel-${type}`, version]);
 }
