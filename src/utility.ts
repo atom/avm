@@ -30,7 +30,6 @@ export function isFileSymlink(filePath: string) {
     throw new Error(`isFileSymlink failed: ${gle}`);
   }
 
-  console.log(`dwFileAttributes: ${JSON.stringify(ret)}`);
   return (ret & FILE_ATTRIBUTE_REPARSE_POINT) !== 0;
 }
 
