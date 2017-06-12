@@ -1,5 +1,12 @@
 import * as fs from 'fs';
+import * as path from 'path';
+import * as url from 'url';
 import * as yauzl from 'yauzl';
+
+import * as download from 'download';
+import * as temp from 'temp';
+
+temp.track();
 
 export function extractSingleFile(zipPath: string, relativePath: string, targetPath: string): Promise<any> {
   return new Promise((res, rej) => {
@@ -33,6 +40,11 @@ export function extractSingleFile(zipPath: string, relativePath: string, targetP
   });
 }
 
-export function downloadFileToTempDir(url: string) {
+export async function downloadFileToTempDir(fileUrl: string) {
+  let targetDir = temp.mkdirSync('avm');
+  let u = url.parse(fileUrl);
+  let ret = path.join(targetDir, path.basename(u.pathname!));
 
+  await download(fileUrl, targetDir);
+  return ret;
 }
