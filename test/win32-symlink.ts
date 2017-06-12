@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import './support';
 import { expect } from 'chai';
 
-import { isFileSymlink, createSymbolicLink } from '../src/utility';
+import { isFileSymlink, createSymbolicLink } from '../src/win32-symlink';
 
 describe('The isSymlink method', function() {
   it('detects regular files as not symlinks', function() {
