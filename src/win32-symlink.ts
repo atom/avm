@@ -21,7 +21,7 @@ const kernel32 = ffi.Library('kernel32', {
   GetLastError: [ ref.types.int32, []]
 });
 
-export function isFileSymlink(filePath: string) {
+export function isPathSymbolicLink(filePath: string) {
   let ret = kernel32.GetFileAttributesW(TEXT(filePath));
 
   if (ret === -1) {

@@ -4,25 +4,25 @@ import * as fs from 'fs';
 import './support';
 import { expect } from 'chai';
 
-import { isFileSymlink, createSymbolicLink } from '../src/win32-symlink';
+import { isPathSymbolicLink, createSymbolicLink } from '../src/win32-symlink';
 
 describe('The isSymlink method', function() {
   it('detects regular files as not symlinks', function() {
     let input = path.resolve(__dirname, '..', 'package.json');
 
-    expect(isFileSymlink(input)).to.equal(false);
+    expect(isPathSymbolicLink(input)).to.equal(false);
   });
 
   it('detects regular directories as not symlinks', function() {
     let input = path.resolve(__dirname);
 
-    expect(isFileSymlink(input)).to.equal(false);
+    expect(isPathSymbolicLink(input)).to.equal(false);
   });
 
   it('throws on bogus paths', function() {
     let input = 'C:\\WEFIowjeafaoiwejfawenfaowefnaowiefwaeof';
 
-    expect(() => isFileSymlink(input)).to.throw();
+    expect(() => isPathSymbolicLink(input)).to.throw();
   });
 });
 
