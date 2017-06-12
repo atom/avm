@@ -17,7 +17,6 @@ describe('the extractSingleFile function', function() {
 
   it('extracts Squirrel to a temp file', async function() {
     let outFile = path.join(this.outPath, 'Squirrel.exe');
-    console.log(`Attempting to write squirrel.exe to ${outFile}`);
 
     await extractSingleFile(
       path.resolve(__dirname, '..', 'fixtures', 'trickline-0.0.2-full.nupkg'),
@@ -30,7 +29,7 @@ describe('the extractSingleFile function', function() {
   });
 });
 
-describe.only('the downloadFileToTempDir function', function() {
+describe('the downloadFileToTempDir function', function() {
   this.timeout(30 * 1000);
 
   it('downloads the Atom RELEASES file', async function() {

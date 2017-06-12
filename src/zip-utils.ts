@@ -16,11 +16,9 @@ export function extractSingleFile(zipPath: string, relativePath: string, targetP
         return;
       }
 
-      console.log('Opened the file!');
       zipFile.on('entry', (entry: any) => {
         if (entry.fileName.toLowerCase() !== relativePath.toLowerCase()) { zipFile.readEntry(); return; }
 
-        console.log('Found the right file!');
         const target = fs.createWriteStream(targetPath, { flags: 'w', autoClose: true });
         zipFile.openReadStream(entry, (err: Error, readStream: any) => {
           if (err) {
@@ -28,7 +26,6 @@ export function extractSingleFile(zipPath: string, relativePath: string, targetP
             return;
           }
 
-          console.log('Opened the stream!');
           readStream.on('end', () => res());
           readStream.on('error', (err: Error) => rej(err));
           readStream.pipe(target);
