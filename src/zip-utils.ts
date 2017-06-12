@@ -37,8 +37,8 @@ export function extractSingleFile(zipPath: string, relativePath: string, targetP
   });
 }
 
-export async function downloadFileToTempDir(fileUrl: string) {
-  let targetDir = temp.mkdirSync('avm');
+export async function downloadFileToTempDir(fileUrl: string, existingDir?: string) {
+  let targetDir = existingDir || temp.mkdirSync('avm');
   let u = url.parse(fileUrl);
   let ret = path.join(targetDir, path.basename(u.pathname!));
 
