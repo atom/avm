@@ -1,10 +1,20 @@
-import * as fs from 'fs';
+import * as fs from 'graceful-fs';
 import * as path from 'path';
 
+import * as rimraf from 'rimraf';
 import * as semver from 'semver';
+
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/defer';
+import 'rxjs/add/observable/timer';
+
+import 'rxjs/add/operator/retry';
+import 'rxjs/add/operator/take';
+import 'rxjs/add/operator/toPromise';
 
 import { createSymbolicLink, isPathSymbolicLink } from './win32-symlink';
 import { spawnPromise } from 'spawn-rx';
+import { downloadFileToTempDir, extractSingleFile } from './zip-utils';
 
 export enum AtomVersionKind {
   NotInstalled,
@@ -68,6 +78,58 @@ export async function switchToInstalledAtom(kind: AtomVersionKind, baseDir?: str
   runInstallHookOnCurrentAtom('install', baseDir);
 }
 
+export async function cleanInstallAtomVersion(kind: AtomVersionKind, baseDir?: string) {
+  let newAtom = getInstalledAtomPath(kind, baseDir);
+  let squirrelTemp = path.join(process.env.LOCALAPPDATA, 'SquirrelTemp');
+
+  if (fs.existsSync(squirrelTemp)) {
+    rimraf.sync(squirrelTemp);
+    fs.mkdirSync(squirrelTemp);
+  }
+
+  // NB: Do downloads first, so that if it fails we aren't left with a hosed install
+  let nugetPackage = await downloadAtomFromRelease(kind, squirrelTemp);
+  let tempDir = path.dirname(nugetPackage);
+  let squirrel = path.join(tempDir, 'Update.exe');
+
+  await extractSingleFile(nugetPackage, 'lib/net45/squirrel.exe', squirrel);
+
+  if (fs.existsSync(newAtom)) {
+    rimraf.sync(newAtom);
+  }
+
+  await uninstallCurrentAtom();
+
+  // NB: Fuck Antivirus
+  await Observable.timer(5 * 1000).take(1).toPromise();
+
+  // NB: Antivirus scanners will be busy with this file since we basically
+  // just wrote it
+  await Observable.defer(() => spawnPromise(squirrel, ['--install', '.', '--silent'], { cwd: tempDir }))
+    .retry(10)
+    .toPromise();
+
+  // NB: Fuck Antivirus More
+  await Observable.timer(5 * 1000).take(1).toPromise();
+
+  await uninstallCurrentAtom();
+
+  let atomDir = path.join(process.env['LOCALAPPDATA'], 'atom');
+  fs.renameSync(atomDir, newAtom);
+}
+
+export function findLatestFullNugetFromReleasesFile(filePath: string) {
+  let lines = fs.readFileSync(filePath, 'utf8').split('\n');
+  let ret = lines.reduce((acc, x) => {
+    let m = x.match(/[a-zA-Z]+-(.*)-full\.nupkg/);
+    if (!m) { return acc; }
+
+    return semver.gte(m[1], acc.version) ? { name: m[0], version: m[1] } : acc;
+  }, { name: '', version: '0.0.0' });
+
+  return ret.name;
+}
+
 function getCurrentPackageVersion(appDir: string): string {
   let apps = fs.readdirSync(appDir).filter(x => !!x.match(/app-/));
   if (!apps || apps.length < 1) {
@@ -98,6 +160,28 @@ function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
   }
 
   return path.join(baseDir || process.env['LOCALAPPDATA'], dirName);
+}
+
+export async function downloadAtomFromRelease(kind: AtomVersionKind, targetDir: string) {
+  let url = 'https://atom.io/api/updates-x64/RELEASES';
+  switch (kind) {
+  case AtomVersionKind.Stable:
+    break;
+  case AtomVersionKind.Beta:
+    url += '?channel=beta';
+    break;
+  default:
+    throw new Error('Channel not supported');
+  }
+
+  let releasesFile = await downloadFileToTempDir(url, targetDir);
+
+  let fileToDownload = findLatestFullNugetFromReleasesFile(releasesFile);
+  let urlToDownload = url.replace(/\/RELEASES/, '/' + fileToDownload);
+
+  await downloadFileToTempDir(urlToDownload, targetDir);
+
+  return path.join(targetDir, fileToDownload);
 }
 
 async function runInstallHookOnCurrentAtom(type: string, baseDir?: string) {
