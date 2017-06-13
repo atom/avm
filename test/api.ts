@@ -1,12 +1,11 @@
 import * as path from 'path';
-//import * as fs from 'fs';
 
 import './support';
 import { expect } from 'chai';
 
 import { findLatestFullNugetFromReleasesFile } from '../src/api';
 
-describe.only('the findLatestFullNugetFromReleasesFile function', function() {
+describe('the findLatestFullNugetFromReleasesFile function', function() {
   it('parses our easy fixture RELEASES file', function() {
     let input = path.join(__dirname, '..', 'fixtures', 'RELEASES');
     let result = findLatestFullNugetFromReleasesFile(input);

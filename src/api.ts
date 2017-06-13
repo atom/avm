@@ -105,7 +105,6 @@ export async function cleanInstallAtomVersion(kind: AtomVersionKind, baseDir?: s
 
   // NB: Antivirus scanners will be busy with this file since we basically
   // just wrote it
-  console.log(`About to run install, cwd is ${tempDir}`);
   await Observable.defer(() => spawnPromise(squirrel, ['--install', '.', '--silent'], { cwd: tempDir }))
     .retry(10)
     .toPromise();
@@ -175,13 +174,11 @@ export async function downloadAtomFromRelease(kind: AtomVersionKind, targetDir: 
     throw new Error('Channel not supported');
   }
 
-  console.log(`Downloading RELEASES file ${url}`);
   let releasesFile = await downloadFileToTempDir(url, targetDir);
 
   let fileToDownload = findLatestFullNugetFromReleasesFile(releasesFile);
   let urlToDownload = url.replace(/\/RELEASES/, '/' + fileToDownload);
 
-  console.log(`Downloading NuGet package ${urlToDownload}`);
   await downloadFileToTempDir(urlToDownload, targetDir);
 
   return path.join(targetDir, fileToDownload);
