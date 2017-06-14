@@ -100,10 +100,9 @@ function validatedStringToVersionKind(channel: string): AtomVersionKind {
   return kind!;
 }
 
-// tslint:disable-next-line:no-var-requires
-let pkgJson = fs.existsSync(require.resolve('../package.json')) ?
-  require('../package.json') :
-  require('../../package.json');
+let pkgJson = __dirname.match(/[\\\/]lib[\\\/]/i) ?
+  require('../../package.json') :
+  require('../package.json');
 
 commander.version(pkgJson.version);
 
