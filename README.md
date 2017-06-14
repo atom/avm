@@ -15,10 +15,6 @@ Switches your current Atom install to one of the following channels:
 
 Displays your current channel and the versions of all of the installed channels
 
-## `avm update [channel]`
-
-Updates the channel (or the currently installed channel) to the latest version of that channel
-
 ## `avm remove [channel]`
 
 Removes an installed channel to save disk space.
