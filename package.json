@@ -12,7 +12,7 @@
   "bin": {
     "avm": "./lib/src/cli.js"
   },
-  "main": "lib/src/index.js",
+  "main": "./lib/src/api.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/atom/avm"
