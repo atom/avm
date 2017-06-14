@@ -1,22 +1,19 @@
+import * as fs from 'fs';
+import * as rimraf from 'rimraf';
 import * as commander from 'commander';
 import * as inquirer from 'inquirer';
 
 import { getAllInstalledAtomVersions, getInstalledAtomVersionKind,
   getVersionFromInstalledAtom, versionKindToString, AtomVersionKind,
-  stringToVersionKind, uninstallCurrentAtom, cleanInstallAtomVersion, switchToInstalledAtom
+  stringToVersionKind, uninstallCurrentAtom, cleanInstallAtomVersion,
+  switchToInstalledAtom, getInstalledAtomPath
 } from './api';
 
 let hasRunCommand = false;
 
 export async function switchVersion(channel: string) {
   hasRunCommand = true;
-  let kind;
-  try {
-    kind = stringToVersionKind(channel);
-  } catch (e) {
-    console.error(`\nUnrecognized channel name ${channel} - valid names are 'stable', 'beta'`);
-    process.exit(-1);
-  }
+  let kind = validatedStringToVersionKind(channel);
 
   let currentAtom = getInstalledAtomVersionKind();
   if (currentAtom === AtomVersionKind.Unknown) {
@@ -41,10 +38,10 @@ export async function switchVersion(channel: string) {
   let atomVersions = getAllInstalledAtomVersions();
   if (!atomVersions.has(kind!)) {
     console.log('Channel not currently installed - installing...');
-    await cleanInstallAtomVersion(kind!);
+    await cleanInstallAtomVersion(kind);
   } else {
     console.log(`Switching channels: ${channel}`);
-    await switchToInstalledAtom(kind!);
+    await switchToInstalledAtom(kind);
   }
 }
 
@@ -72,6 +69,28 @@ export function displayVersion() {
 export function removeVersion(channel: string) {
   hasRunCommand = true;
   console.log(`Remove! ${channel}`);
+
+  let kind = validatedStringToVersionKind(channel);
+  let fullDir = getInstalledAtomPath(kind);
+
+  if (!fs.existsSync(fullDir)) {
+    console.error(`Channel ${channel} isn't installed`);
+    process.exit(-1);
+  }
+
+  rimraf.sync(fullDir);
+}
+
+function validatedStringToVersionKind(channel: string): AtomVersionKind {
+  let kind;
+  try {
+    kind = stringToVersionKind(channel);
+  } catch (e) {
+    console.error(`\nUnrecognized channel name ${channel} - valid names are 'stable', 'beta'`);
+    process.exit(-1);
+  }
+
+  return kind!;
 }
 
 // tslint:disable-next-line:no-var-requires

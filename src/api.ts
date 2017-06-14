@@ -201,7 +201,7 @@ function getCurrentPackageVersion(appDir: string): string {
   }, '0.0.0');
 }
 
-function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
+export function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
   let dirName;
 
   switch (kind) {
