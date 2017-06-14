@@ -39,10 +39,10 @@ export async function switchVersion(channel: string) {
   if (!atomVersions.has(kind!)) {
     console.log('Channel not currently installed - installing...');
     await cleanInstallAtomVersion(kind);
-  } else {
-    console.log(`Switching channels: ${channel}`);
-    await switchToInstalledAtom(kind);
   }
+
+  console.log(`Switching channels: ${channel}`);
+  await switchToInstalledAtom(kind);
 }
 
 export function displayVersion() {
@@ -68,13 +68,18 @@ export function displayVersion() {
 
 export function removeVersion(channel: string) {
   hasRunCommand = true;
-  console.log(`Remove! ${channel}`);
 
   let kind = validatedStringToVersionKind(channel);
   let fullDir = getInstalledAtomPath(kind);
 
+  let current = getInstalledAtomVersionKind();
+  if (current === kind) {
+    console.error(`\nCan't remove current channel, switch to another channel first.`);
+    process.exit(-1);
+  }
+
   if (!fs.existsSync(fullDir)) {
-    console.error(`Channel ${channel} isn't installed`);
+    console.error(`\nChannel ${channel} isn't installed`);
     process.exit(-1);
   }
 
