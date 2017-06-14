@@ -18,3 +18,7 @@ Displays your current channel and the versions of all of the installed channels
 ## `avm remove [channel]`
 
 Removes an installed channel to save disk space.
+
+### But what about Mac or Linux?
+
+Coming soon? Maybe? /shrug
