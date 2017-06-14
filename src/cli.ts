@@ -101,7 +101,11 @@ function validatedStringToVersionKind(channel: string): AtomVersionKind {
 }
 
 // tslint:disable-next-line:no-var-requires
-commander.version(require('../package.json').version);
+let pkgJson = fs.existsSync(require.resolve('../package.json')) ?
+  require('../package.json') :
+  require('../../package.json');
+
+commander.version(pkgJson.version);
 
 commander
   .command('switch [channel]').alias('s')
