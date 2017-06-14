@@ -39,6 +39,19 @@ export function versionKindToString(kind: AtomVersionKind) {
   }
 }
 
+export function stringToVersionKind(kind: string) {
+  switch (kind) {
+  case 'stable':
+    return AtomVersionKind.Stable;
+  case 'beta':
+    return AtomVersionKind.Beta;
+  case 'canary':
+    return AtomVersionKind.Daily;
+  default:
+    throw new Error('Not a valid version kind');
+  }
+}
+
 export function getInstalledAtomVersionKind(baseDir?: string): AtomVersionKind {
   let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
 

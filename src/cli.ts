@@ -1,14 +1,48 @@
 import * as commander from 'commander';
+import * as inquirer from 'inquirer';
 
 import { getAllInstalledAtomVersions, getInstalledAtomVersionKind,
-  getVersionFromInstalledAtom, versionKindToString, AtomVersionKind
+  getVersionFromInstalledAtom, versionKindToString, AtomVersionKind,
+  stringToVersionKind, uninstallCurrentAtom, cleanInstallAtomVersion, switchToInstalledAtom
 } from './api';
 
 let hasRunCommand = false;
 
-export function switchVersion(channel: string) {
+export async function switchVersion(channel: string) {
   hasRunCommand = true;
-  console.log(`Switch! ${channel}`);
+  let kind;
+  try {
+    kind = stringToVersionKind(channel);
+  } catch (e) {
+    console.error(`\nUnrecognized channel name ${channel} - valid names are 'stable', 'beta'`);
+    process.exit(-1);
+  }
+
+  let currentAtom = getInstalledAtomVersionKind();
+  if (currentAtom === AtomVersionKind.Unknown) {
+    console.log('\n*** Currently installed Atom is unknown or not managed by atom-version-manager ***');
+
+    let shouldUninstall = await inquirer.prompt([{
+      type: 'confirm',
+      message: 'Uninstall it?',
+      default: false
+    }]);
+
+    if (!shouldUninstall) {
+      process.exit(-1);
+    }
+
+    await uninstallCurrentAtom();
+  }
+
+  let atomVersions = getAllInstalledAtomVersions();
+  if (!atomVersions.has(kind!)) {
+    console.log('Channel not currently installed - installing...');
+    await cleanInstallAtomVersion(kind!);
+  } else {
+    console.log(`Switching channels: ${channel}`);
+    await switchToInstalledAtom(kind!);
+  }
 }
 
 export function displayVersion() {
