@@ -1,5 +1,9 @@
 import * as commander from 'commander';
 
+import { getAllInstalledAtomVersions, getInstalledAtomVersionKind,
+  getVersionFromInstalledAtom, versionKindToString, AtomVersionKind
+} from './api';
+
 let hasRunCommand = false;
 
 export function switchVersion(channel: string) {
@@ -9,7 +13,23 @@ export function switchVersion(channel: string) {
 
 export function displayVersion() {
   hasRunCommand = true;
-  console.log('Display!');
+
+  let versions = getAllInstalledAtomVersions();
+  let current = getInstalledAtomVersionKind();
+
+  console.log('\nInstalled Atom Versions:\n');
+
+  versions.forEach((dir, ver) => {
+    let currentSym = (ver === current) ? '*' : ' ';
+    let version = getVersionFromInstalledAtom(dir);
+    let name = versionKindToString(ver);
+
+    console.log(`${currentSym} ${name} - ${version}`);
+  });
+
+  if (current === AtomVersionKind.Unknown || AtomVersionKind.NotInstalled) {
+    console.log('\n*** Currently installed Atom is unknown or not managed by atom-version-manager');
+  }
 }
 
 export function removeVersion(channel: string) {
