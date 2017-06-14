@@ -24,7 +24,35 @@ export enum AtomVersionKind {
   Daily
 }
 
-export function getInstalledAtomVersionType(baseDir?: string): AtomVersionKind {
+export function versionKindToString(kind: AtomVersionKind) {
+  switch (kind) {
+  case AtomVersionKind.NotInstalled:
+    return 'not installed';
+  case AtomVersionKind.Unknown:
+    return 'unknown';
+  case AtomVersionKind.Stable:
+    return 'stable';
+  case AtomVersionKind.Beta:
+    return 'beta';
+  case AtomVersionKind.Daily:
+    return 'canary';
+  }
+}
+
+export function stringToVersionKind(kind: string) {
+  switch (kind) {
+  case 'stable':
+    return AtomVersionKind.Stable;
+  case 'beta':
+    return AtomVersionKind.Beta;
+  case 'canary':
+    return AtomVersionKind.Daily;
+  default:
+    throw new Error('Not a valid version kind');
+  }
+}
+
+export function getInstalledAtomVersionKind(baseDir?: string): AtomVersionKind {
   let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
 
   if (!fs.existsSync(atomDir)) {
@@ -35,23 +63,34 @@ export function getInstalledAtomVersionType(baseDir?: string): AtomVersionKind {
     return AtomVersionKind.Unknown;
   }
 
-  let actualAtomDir = fs.realpathSync(atomDir);
-  let m = actualAtomDir.match(/\\avm-atom-(stable|beta|daily)/i);
-  if (!m) { return AtomVersionKind.Unknown; }
-
-  switch (m[1]) {
-  case 'stable':
-    return AtomVersionKind.Stable;
-  case 'beta':
-    return AtomVersionKind.Beta;
-  case 'daily':
-    return AtomVersionKind.Daily;
-  default:
-    return AtomVersionKind.Unknown;
-  }
+  return directoryNameToAtomVersionKind(atomDir);
 }
 
-export async function uninstallCurrentAtom(baseDir?: string) {
+export function getAllInstalledAtomVersions(baseDir?: string): Map<AtomVersionKind, string> {
+  let dir = baseDir || process.env['LOCALAPPDATA'];
+
+  return fs.readdirSync(dir).reduce((acc, x) => {
+    let fullPath = path.join(dir, x);
+    let kind = directoryNameToAtomVersionKind(fullPath);
+    if (kind === AtomVersionKind.Unknown) { return acc; }
+
+    acc.set(kind, fullPath);
+    return acc;
+  }, new Map<AtomVersionKind, string>());
+}
+
+export function getVersionFromInstalledAtom(atomDir: string) {
+  let entries = fs.readdirSync(atomDir);
+
+  return entries.reduce((acc, x) => {
+    let m = x.match(/^app-(.*)$/i);
+    if (!m) { return acc; }
+
+    return semver.gte(acc, m[1]) ? acc : m[1];
+  }, '0.0.0');
+}
+
+export async function uninstallCurrentAtom(baseDir?: string, forceUninstall?: boolean) {
   let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
   if (!fs.existsSync(atomDir)) {
     return;
@@ -61,6 +100,9 @@ export async function uninstallCurrentAtom(baseDir?: string) {
 
   if (isPathSymbolicLink(atomDir)) {
     fs.rmdirSync(atomDir);
+  } else {
+    if (!forceUninstall) { return; }
+    rimraf.sync(atomDir);
   }
 }
 
@@ -130,6 +172,23 @@ export function findLatestFullNugetFromReleasesFile(filePath: string) {
   return ret.name;
 }
 
+function directoryNameToAtomVersionKind(atomDir: string) {
+  let actualAtomDir = fs.realpathSync(atomDir);
+  let m = actualAtomDir.match(/\\avm-atom-(stable|beta|daily)/i);
+  if (!m) { return AtomVersionKind.Unknown; }
+
+  switch (m[1]) {
+  case 'stable':
+    return AtomVersionKind.Stable;
+  case 'beta':
+    return AtomVersionKind.Beta;
+  case 'daily':
+    return AtomVersionKind.Daily;
+  default:
+    return AtomVersionKind.Unknown;
+  }
+}
+
 function getCurrentPackageVersion(appDir: string): string {
   let apps = fs.readdirSync(appDir).filter(x => !!x.match(/app-/));
   if (!apps || apps.length < 1) {
@@ -142,7 +201,7 @@ function getCurrentPackageVersion(appDir: string): string {
   }, '0.0.0');
 }
 
-function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
+export function getInstalledAtomPath(kind: AtomVersionKind, baseDir?: string) {
   let dirName;
 
   switch (kind) {
