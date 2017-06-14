@@ -1,6 +1,6 @@
 {
   "name": "atom-version-manager",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A tool to quickly switch between versions of Atom",
   "scripts": {
     "compile": "tsc",
