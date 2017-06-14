@@ -9,6 +9,10 @@
     "test": "mocha --compilers ts:ts-node/register ./test/*",
     "build": "npm-run-all compile lint test"
   },
+  "bin":{
+    "avm": "./lib/src/cli.js"
+  },
+  "main": "./lib/src/api.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/atom/avm"
