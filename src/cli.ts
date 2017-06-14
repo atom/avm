@@ -24,15 +24,18 @@ export async function switchVersion(channel: string) {
 
     let shouldUninstall = await inquirer.prompt([{
       type: 'confirm',
+      name: 'uninstall',
       message: 'Uninstall it?',
       default: false
     }]);
 
-    if (!shouldUninstall) {
+    if (!shouldUninstall.uninstall) {
+      console.log('Not uninstalling. Exiting.');
       process.exit(-1);
     }
 
-    await uninstallCurrentAtom();
+    console.log('Uninstalling...');
+    await uninstallCurrentAtom(undefined, true);
   }
 
   let atomVersions = getAllInstalledAtomVersions();

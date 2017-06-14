@@ -90,7 +90,7 @@ export function getVersionFromInstalledAtom(atomDir: string) {
   }, '0.0.0');
 }
 
-export async function uninstallCurrentAtom(baseDir?: string) {
+export async function uninstallCurrentAtom(baseDir?: string, forceUninstall?: boolean) {
   let atomDir = path.join(baseDir || process.env['LOCALAPPDATA'], 'atom');
   if (!fs.existsSync(atomDir)) {
     return;
@@ -100,6 +100,9 @@ export async function uninstallCurrentAtom(baseDir?: string) {
 
   if (isPathSymbolicLink(atomDir)) {
     fs.rmdirSync(atomDir);
+  } else {
+    if (!forceUninstall) { return; }
+    rimraf.sync(atomDir);
   }
 }
 
