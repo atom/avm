@@ -37,7 +37,7 @@ describe('The createSymbolicLink method', function() {
     createSymbolicLink(srcFolder, targetFolder);
 
     try {
-      expect(fs.existsSync(path.join(targetFolder, 'index.ts'))).to.be.true;
+      expect(fs.existsSync(path.join(targetFolder, 'win32-symlink.ts'))).to.be.true;
     } finally {
       fs.rmdirSync(targetFolder);
     }

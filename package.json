@@ -4,7 +4,7 @@
   "description": "A tool to quickly switch between versions of Atom",
   "scripts": {
     "compile": "tsc",
-    "prepublish": "npm run compile",
+    "prepublish": "npm run compile && npm run test",
     "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "mocha --compilers ts:ts-node/register ./test/*",
     "build": "npm-run-all compile lint test"
