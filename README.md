@@ -1,4 +1,5 @@
-# atom-version-manager: A tool to quickly switch between versions of Atom
+##### Atom and all repositories under Atom will be archived on December 15, 2022. Learn more in our [official announcement](https://github.blog/2022-06-08-sunsetting-atom/)
+ # atom-version-manager: A tool to quickly switch between versions of Atom
 
 This tool lets you quickly switch between different distribution channels of Atom on Windows.
 
